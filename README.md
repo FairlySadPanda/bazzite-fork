@@ -290,7 +290,7 @@ We also ship a config for the popular [pull app](https://github.com/apps/pull) i
 ### How to Sign Your Own Images
 
 1. First, [familiarize yourself](https://docs.github.com/en/actions/security-guides/encrypted-secrets) on keeping secrets on GitHub.
-2. [Generate a new key pair](https://docs.sigstore.dev/cosign/key_management/signing_with_self-managed_keys/) with Cosign. 
+2. [Generate a new key pair](https://docs.sigstore.dev/cosign/key_management/signing_with_self-managed_keys/) with Cosign. This key pair must have no signature.
 3. Replace the `cosign.pub` file in your public repo with the one you generated - you and your users will need it to check the signatures. 
 4. Add the private key as a Repository Secret in the fork's settings page, in the menu `Settings -> Secrets and variables -> Actions`. Name the secret `SIGNING_SECRET`.
 
