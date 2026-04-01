@@ -168,6 +168,7 @@ RUN --mount=type=cache,dst=/var/cache \
 
 # Install patched fwupd
 # Install Valve's patched Mesa, Pipewire, Bluez, and Xwayland
+# HACK: Don't actually install Valve's patched Pipewire (don't replace its repo with Bazzite's)!
 RUN --mount=type=cache,dst=/var/cache \
     --mount=type=cache,dst=/var/cache/libdnf5 \
     --mount=type=cache,dst=/var/log \
@@ -177,7 +178,7 @@ RUN --mount=type=cache,dst=/var/cache \
         iptsd \
         libwacom-surface && \
     dnf5 -y remove \
-        # pipewire-config-raop \
+        pipewire-config-raop \
         mesa-va-drivers && \
     declare -A toswap=( \
         ["copr:copr.fedorainfracloud.org:ublue-os:bazzite"]="wireplumber" \
@@ -188,17 +189,18 @@ RUN --mount=type=cache,dst=/var/cache \
     ) && \
     for repo in "${!toswap[@]}"; do \
         for package in ${toswap[$repo]}; do dnf5 -y swap --from-repo=$repo $package $package; done; \
-    done && unset -v toswap repo package && \
+    done && \
+    unset -v toswap repo package && \
     dnf5 versionlock add \
-        # pipewire \
-        # pipewire-alsa \
-        # pipewire-gstreamer \
-        # pipewire-jack-audio-connection-kit \
-        # pipewire-jack-audio-connection-kit-libs \
-        # pipewire-libs \
-        # pipewire-plugin-libcamera \
-        # pipewire-pulseaudio \
-        # pipewire-utils \
+        pipewire \
+        pipewire-alsa \
+        pipewire-gstreamer \
+        pipewire-jack-audio-connection-kit \
+        pipewire-jack-audio-connection-kit-libs \
+        pipewire-libs \
+        pipewire-plugin-libcamera \
+        pipewire-pulseaudio \
+        pipewire-utils \
         wireplumber \
         wireplumber-libs \
         bluez \
@@ -227,6 +229,31 @@ RUN --mount=type=cache,dst=/var/cache \
         libbluray \
         libbluray-utils && \
     /ctx/cleanup
+
+# HACK: Try and ensure Pipewire is actually updated
+#       Theoretically - the Fedora 43 image has some Pipewire version on it.
+#       We have a spec file saying we'd like to install 1.6.2
+#       So all other things being equal, if we install Pipewire, it _should_ be
+#       the version specified in the spec file?
+RUN --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/cache/libdnf5 \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=tmpfs,dst=/tmp \
+    dnf5 versionlock delete \
+        pipewire \
+        pipewire-libs \
+        pipewire-utils \
+        pipewire-alsa \
+        pipewire-gstreamer \
+        pipewire-jack-audio-connection \
+        pipewire-jack-audio-connection-kit-libs \
+        pipewire-plugin-libcamera \
+        pipewire-pulseaudio \
+        pipewire-jack-audio-connection-kit && \
+    dnf5 update pipewire && \
+    /ctx/cleanup && \
+    pipewire --version
 
 # Remove unneeded packages
 RUN --mount=type=cache,dst=/var/cache \
