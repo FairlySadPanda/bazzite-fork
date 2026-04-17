@@ -687,7 +687,7 @@ RUN --mount=type=cache,dst=/var/cache \
         dnf5 -y remove \
             steamdeck-kde-presets-desktop && \
        dnf5 -y install \
-            steamdeck-kde-presets \
+            steamdeck-kde-presets.noarch-0.0.git.7234.ef5d8a6e.dirty.3lwgq9 \
     ; else \
         dnf5 -y install \
             sddm && \
